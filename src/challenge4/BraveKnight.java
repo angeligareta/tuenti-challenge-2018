@@ -52,11 +52,11 @@ import java.util.Queue;
 public class BraveKnight {
 
 	/** String that specifies the name of the input file. */
-	private final static String INPUT_FILENAME = "src/challenge4/testInput";
+	private final static String INPUT_FILENAME = "src/challenge4/submitInput";
 	/**
 	 * String that specifies the name of the output file, with the required format.
 	 */
-	private final static String OUTPUT_FILENAME = "src/challenge4/testOutput";
+	private final static String OUTPUT_FILENAME = "src/challenge4/submitOutput";
 
 	/**
 	 * Method that determine if a position in the board is valid, according to if
