@@ -11,6 +11,7 @@ package challenge4;
  * Abstract class that represent a Square and the available movements from it.
  */
 public abstract class Square {
+	public static final int MOVEMENT_NUMBER = 8;
 	private int xPos;
 	private int yPos;
 	private int numberOfSteps;
@@ -58,14 +59,25 @@ public abstract class Square {
 	}
 
 	/**
-	 * @return the columnMovements
+	 * @param i
+	 * @return
 	 */
-	public int[] getColumnMovements() {
-		return columnMovements;
+	public int getColumnMovementAt(int i) {
+		if (i >= columnMovements.length) {
+			throw new IllegalArgumentException("Trying to access a not valid position of row movements." + i);
+		}
+		return this.columnMovements[i];
 	}
 
-	public int[] getRowMovements() {
-		return rowMovements;
+	/**
+	 * @param i
+	 * @return
+	 */
+	public int getRowMovementAt(int i) {
+		if (i >= rowMovements.length) {
+			throw new IllegalArgumentException("Trying to access a not valid position of row movements." + i);
+		}
+		return this.rowMovements[i];
 	}
 
 	/**
@@ -83,13 +95,27 @@ public abstract class Square {
 	public void setRowMovements(int[] rowMovements) {
 		this.rowMovements = rowMovements;
 	}
+	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	public int hashCode() {
+		return this.getxPos() * 31 + this.getyPos();
+	}
+	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	public boolean equals(Object anotherObject) {		
+		Square anotherSquare = (Square) anotherObject;
+		return !(this.getxPos() != anotherSquare.getxPos() || this.getyPos() != anotherSquare.getyPos());
+	}
 }
 
 /**
  * Square of type Ground, with it's movements.
  */
 class GroundSquare extends Square {
-
 	/** Available row movements for this square. */
 	private final int[] ROW_MOVEMENTS = new int[] { 2, 2, -2, -2, 1, 1, -1, -1 };
 	/** Available column movements for this square. */

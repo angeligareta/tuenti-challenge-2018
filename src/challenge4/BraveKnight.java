@@ -12,11 +12,10 @@ import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
-
-class Knight {
-
-}
+import java.util.HashMap;
+import java.util.Queue;
 
 /**
  * [DESCRIPTION]
@@ -30,8 +29,48 @@ public class BraveKnight {
 	 */
 	private final static String OUTPUT_FILENAME = "src/challenge4/testOutput";
 
+	private static boolean isValid(ArrayList<ArrayList<Square>> board, int boardWidth, int boardHeight, int neighborXPos,
+			int neighborYPos) {
+		return ((neighborXPos < boardWidth) && (neighborXPos >= 0) && (neighborYPos < boardHeight) && (neighborYPos >= 0)
+				&& !(board.get(neighborYPos).get(neighborXPos) instanceof LavaSquare));
+	}
 
-	private static int getMinNumberOfSteps(int boardWidth, int boardHeight, ArrayList<ArrayList<Square>> board,
+	private static int BFS(ArrayList<ArrayList<Square>> board, int boardWidth, int boardHeight, Square source,
+			Square destination) {
+		HashMap<Square, Boolean> visitedSquares = new HashMap<>();
+		Queue<Square> squareQueue = new ArrayDeque<>();
+		squareQueue.add(source);
+
+		while (!squareQueue.isEmpty()) {
+			Square currentSquare = squareQueue.poll();
+
+			// If reached destination
+			if ((currentSquare.getxPos() == destination.getxPos()) && (currentSquare.getyPos() == destination.getyPos())) {
+				return currentSquare.getNumberOfSteps();
+			}
+
+			// If not visited
+			if (!visitedSquares.containsKey(currentSquare)) {
+				visitedSquares.put(currentSquare, true);
+
+				for (int i = 0; i < Square.MOVEMENT_NUMBER; ++i) {
+					int neighborXPos = currentSquare.getxPos() + currentSquare.getRowMovementAt(i);
+					int neighborYPos = currentSquare.getyPos() + currentSquare.getColumnMovementAt(i);
+					if (isValid(board, boardWidth, boardHeight, neighborXPos, neighborYPos)) {
+						System.out.println(
+								"(" + neighborYPos + " , " + neighborXPos + ") Distance: " + (currentSquare.getNumberOfSteps() + 1));
+						Square neighborSquare = board.get(neighborYPos).get(neighborXPos);
+						neighborSquare.setNumberOfSteps(currentSquare.getNumberOfSteps() + 1);
+						squareQueue.add(neighborSquare);
+					}
+				}
+			}
+		}
+
+		return 0;
+	}
+
+	private static int getMinNumberOfSteps(ArrayList<ArrayList<Square>> board, int boardWidth, int boardHeight,
 			Square source, Square princess, Square destination) {
 		showBoard(boardWidth, boardHeight, board);
 
@@ -41,8 +80,25 @@ public class BraveKnight {
 		else if (destination == null) {
 			return 0;
 		}
+		System.out.println("Going");
+		int stepsFromSourceToPrincess = BFS(board, boardWidth, boardHeight, source, princess);
+		resetBoardDistances(board);
+		System.out.println("Returning");
+		int stepsFromPrincessToDestination = BFS(board, boardWidth, boardHeight, princess, destination);
 
-		return 0;
+		return (stepsFromSourceToPrincess == 0 || stepsFromPrincessToDestination == 0) ? 0
+				: stepsFromSourceToPrincess + stepsFromPrincessToDestination;
+	}
+
+	/**
+	 * @param board
+	 */
+	private static void resetBoardDistances(ArrayList<ArrayList<Square>> board) {
+		for (ArrayList<Square> boardRow : board) {
+			for (Square element : boardRow) {
+				element.setNumberOfSteps(0);
+			}
+		}
 	}
 
 	/**
@@ -114,9 +170,9 @@ public class BraveKnight {
 					board.add(boardRow);
 				}
 
-				int minNumberOfSteps = getMinNumberOfSteps(boardWidth, boardHeight, board, source, princess, destination);
+				int minNumberOfSteps = getMinNumberOfSteps(board, boardWidth, boardHeight, source, princess, destination);
 				String solutionSteps = (minNumberOfSteps == 0) ? "IMPOSSIBLE" : String.valueOf(minNumberOfSteps);
-				System.out.println("Case #" + i + ": " + solutionSteps + System.lineSeparator());
+				System.out.println("Case #" + i + ": " + solutionSteps);
 				codeWriter.write("Case #" + i + ": " + solutionSteps + System.lineSeparator());
 			}
 
