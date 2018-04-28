@@ -1,5 +1,5 @@
 /**
- * Square.java
+ * Set of classes that represent the different squares that our program can have. It follows the open-closed pattern.
  *
  * @author Ángel Igareta (angel@igareta.com)
  * @version 1.0
@@ -95,18 +95,22 @@ public abstract class Square {
 	public void setRowMovements(int[] rowMovements) {
 		this.rowMovements = rowMovements;
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#hashCode()
 	 */
 	public int hashCode() {
-		return this.getxPos() * 31 + this.getyPos();
+		return (this.getxPos() * 31) + (this.getyPos() * 31);
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
-	public boolean equals(Object anotherObject) {		
+	public boolean equals(Object anotherObject) {
 		Square anotherSquare = (Square) anotherObject;
 		return !(this.getxPos() != anotherSquare.getxPos() || this.getyPos() != anotherSquare.getyPos());
 	}
