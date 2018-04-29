@@ -50,7 +50,7 @@ public class ADNMixer {
 	/** Parameters for socket. */
 	private static final int PORT = 3241;
 	private static final String IP = "52.49.91.111";
-	private static final String MODE = "TEST";
+	private static final String MODE = "SUBMIT";
 
 	/** Key output file. */
 	private static final String OUTPUT_FILE = "src/challenge5/key";
@@ -59,46 +59,53 @@ public class ADNMixer {
 	 * Main method.
 	 */
 	public static void main(String[] args) throws InterruptedException {
-		try {
-			Socket socket = new Socket(IP, PORT);
-			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			PrintWriter writer = new PrintWriter(socket.getOutputStream());
-			System.out.println("Connection stablished with: " + socket.getInetAddress());
-			System.out.println("Starting Challenge 5!");
-
-			// Getting the number of Cases
-			String firstLine = reader.readLine();
-			int numberOfCases = Integer.parseInt(firstLine.split("\\s")[1]);
-
-			// Choosing mode
-			System.out.println(reader.readLine());
-			System.out.println("Setting MODE: " + MODE);
-			;
-			writer.println(MODE);
-			writer.flush();
-
-			// Starting tests
-			String key = "";
-			System.out.println(reader.readLine());
-			for (int i = 0; i < numberOfCases; ++i) {
-				String ADN = reader.readLine();
-				writer.println(getSolutionOf(ADN));
-				writer.flush();
-				key = reader.readLine();
-				System.out.println(key);
-			}
-
-			reader.close();
-			writer.close();
-			socket.close();
-
-			BufferedWriter keyWriter = new BufferedWriter(new FileWriter(OUTPUT_FILE));
-			keyWriter.write(key.split("\"")[1]); // To write the key
-			keyWriter.close();
-		}
-		catch (IOException e) {
-			e.printStackTrace();
-		}
+		System.out.println(getSolutionOf(
+				"TATaCaACcCG aAgGacctcTtGgt TAttaCAtaTtA CgG TAttaCAtaTtAC CTATaCaACcCGcGg CCcCTaGcATaC cTgTGGAGAg cGgCgG"));
+		// try {
+		// Socket socket = new Socket(IP, PORT);
+		// BufferedReader reader = new BufferedReader(new
+		// InputStreamReader(socket.getInputStream()));
+		// PrintWriter writer = new PrintWriter(socket.getOutputStream());
+		// System.out.println("Connection stablished with: " + socket.getInetAddress());
+		// System.out.println("Starting Challenge 5!");
+		//
+		// // Getting the number of Cases
+		// String firstLine = reader.readLine();
+		// int numberOfCases = Integer.parseInt(firstLine.split("\\s")[1]);
+		//
+		// // Choosing mode
+		// System.out.println(reader.readLine());
+		// System.out.println("Setting MODE: " + MODE);
+		// ;
+		// writer.println(MODE);
+		// writer.flush();
+		//
+		// // Starting tests
+		// String key = "";
+		// System.out.println(reader.readLine());
+		// for (int i = 0; i < numberOfCases; ++i) {
+		// String ADN = reader.readLine();
+		// System.out.println(ADN);
+		// String solution = getSolutionOf(ADN);
+		// System.out.println(solution);
+		//
+		// writer.println(solution);
+		// writer.flush();
+		// key = reader.readLine();
+		// System.out.println(key);
+		// }
+		//
+		// reader.close();
+		// writer.close();
+		// socket.close();
+		//
+		// BufferedWriter keyWriter = new BufferedWriter(new FileWriter(OUTPUT_FILE));
+		// keyWriter.write(key.split("\"")[1]); // To write the key
+		// keyWriter.close();
+		// }
+		// catch (IOException e) {
+		// e.printStackTrace();
+		// }
 	}
 
 	public static String getSolutionOf(String ADN) {
@@ -114,14 +121,17 @@ public class ADNMixer {
 			indexArray.add(i);
 			lastPermutedSolution.add(new Solution(aDNParts.get(i), indexArray));
 		}
+		ArrayList<Solution> initialPermutedSolution = new ArrayList<Solution>(lastPermutedSolution);
+		ArrayList<Integer> bannedSolution = new ArrayList<Integer>();
 
 		// Loop to permute between loops of size i + 1
 		for (int i = 1; i < maxSizeOfSubGroups; ++i) {
-			ArrayList<Solution> currentPermutatedSolution = permutateGroupsOf(aDNParts, lastPermutedSolution);
+			ArrayList<Solution> currentPermutatedSolution = permutateGroupsOf(initialPermutedSolution, lastPermutedSolution);
 			if (currentPermutatedSolution == null) { // Solution Found
 				break;
 			}
 			else {
+				// bannedSolution = getBannedSolution(currentPermutatedSolution);
 				lastPermutedSolution = currentPermutatedSolution;
 			}
 		}
@@ -139,25 +149,65 @@ public class ADNMixer {
 	}
 
 	/**
+	 * @param currentPermutatedSolution
+	 */
+	private static ArrayList<Integer> getBannedSolution(ArrayList<Solution> currentPermutatedSolution) {
+		ArrayList<Integer> bannedSolutions = new ArrayList<Integer>();
+
+		for (int i = 0; i < currentPermutatedSolution.size(); ++i) {
+			boolean contained = false;
+			String currentString = currentPermutatedSolution.get(i).getConcatenedString();
+			for (int j = 0; j < currentPermutatedSolution.size(); ++j) {
+				if (i == j) {
+					continue;
+				}
+				String secondaryString = currentPermutatedSolution.get(j).getConcatenedString();
+				if (currentString.contains(secondaryString.substring(secondaryString.length() / 2))
+						|| currentString.contains(secondaryString.substring(0, secondaryString.length() / 2))) {
+					System.out.println("Containing: " + currentString + " " + secondaryString);
+					contained = true;
+				}
+			}
+			if (!contained) {
+				// System.out.println("Removing " + currentPermutatedSolution.get(i));
+				for (Integer bannedIndex : currentPermutatedSolution.get(i).getIndexUsedForConcat()) {
+					if (!bannedSolutions.contains(bannedIndex)) {
+						bannedSolutions.add(bannedIndex);
+					}
+				}
+			}
+		}
+
+		System.out.println("\nBanned: ");
+		for (Integer i : bannedSolutions) {
+			System.out.print(i + " ");
+		}
+
+		return bannedSolutions;
+	}
+
+	/**
 	 * Method that permutes the ADNParts of size 1 with the base Array received by
 	 * argument. If during that process there is another solution with the same
 	 * string and formed by different indexes, it adds the two solutions to the
 	 * finalSolution object.
 	 */
-	private static ArrayList<Solution> permutateGroupsOf(ArrayList<String> aDNParts, ArrayList<Solution> baseArray) {
+	private static ArrayList<Solution> permutateGroupsOf(ArrayList<Solution> initialPermutedSolution,
+			ArrayList<Solution> baseArray) {
 		ArrayList<Solution> concatStringMap = new ArrayList<Solution>();
-
 		for (int i = 0; i < baseArray.size(); ++i) {
 			Solution currentBaseSolution = baseArray.get(i);
 
-			for (int j = 0; j < aDNParts.size(); ++j) {
+			for (int j = 0; j < initialPermutedSolution.size(); ++j) {
 				if (currentBaseSolution.getIndexUsedForConcat().contains(j)) {
 					continue;
 				}
-
 				ArrayList<Integer> newIndexArray = currentBaseSolution.getIndexUsedForConcat();
 				newIndexArray.add(j);
-				String currentConcatenedString = currentBaseSolution.getConcatenedString().concat(aDNParts.get(j));
+				String currentConcatenedString = currentBaseSolution.getConcatenedString()
+						.concat(initialPermutedSolution.get(j).getConcatenedString());
+				System.out.println(
+						currentBaseSolution.getConcatenedString() + " + " + initialPermutedSolution.get(j).getConcatenedString());
 
 				Solution newSolution = new Solution(currentConcatenedString, newIndexArray);
 				if (concatStringMap.contains(newSolution)) {
