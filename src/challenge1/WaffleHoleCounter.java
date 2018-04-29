@@ -29,11 +29,11 @@ import java.io.IOException;
 public class WaffleHoleCounter {
 
 	/** String that specifies the name of the input file. */
-	private final static String INPUT_FILENAME = "src/challenge1/input.txt";
+	private final static String INPUT_FILENAME = "src/challenge1/submitInput";
 	/**
 	 * String that specififes the name of the output file, with the required format.
 	 */
-	private final static String OUTPUT_FILENAME = "src/challenge1/output.txt";
+	private final static String OUTPUT_FILENAME = "src/challenge1/submitOutput";
 
 	/**
 	 * Main method. It doesn't receive anything. It reads the input file, evaluate
