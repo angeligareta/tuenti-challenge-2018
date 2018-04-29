@@ -1,5 +1,25 @@
 /**
- * ADNMixer.java
+ * ADN MIXER
+ * 
+ * This program has the aim of finding a sequence of ADN that was badly split.
+ * For example, if we have an initial ADN sequence of 'aaccGgTTC', there are two
+ * random splits that we receive by parameter, such as 'aacc' 'GgTTC' or 'aaccG'
+ * 'gTTC'. However, to make it interesting, they come mixed with parts from
+ * another experiment such as 'aaaa' 'cccc' and 'gttc'.
+ * 
+ * In order to find the original sequence, we have to make permutations of
+ * strings of a size. For example, we start with strings formed by two strings
+ * and, if during the permutation, we see that this string has been already
+ * formed and the words used to form it are different than the ones used to form
+ * the current one, we found the solution.
+ * 
+ * If during that process we don't find a pair of concatenated strings equal, we
+ * make the same process but choosing the strings formed by 3 strings. We repeat
+ * the process until a solution is found or the size of the subgroups is higher
+ * than the half of the number of strings.
+ * 
+ * Finally, to receive the test we have to connect to an ip and solve the tests
+ * in a fixed time. Let's do it!
  *
  * @author Ángel Igareta (angel@igareta.com)
  * @version 1.0
@@ -7,23 +27,82 @@
  */
 package challenge5;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.TreeSet;
 
 /**
- * [DESCRIPTION]
+ * Class that contains the main method that reads from the socket and solve the
+ * solutions.
  */
 public class ADNMixer {
 
 	/** Sorted set of integer that indicate the final solution indexes. */
 	private static TreeSet<Integer> finalSolution = new TreeSet<Integer>();
 
+	/** Parameters for socket. */
+	private static final int PORT = 3241;
+	private static final String IP = "52.49.91.111";
+	private static final String MODE = "TEST";
+
+	/** Key output file. */
+	private static final String OUTPUT_FILE = "src/challenge5/key";
+
 	/**
 	 * Main method.
 	 */
 	public static void main(String[] args) throws InterruptedException {
-		String ADN = "TATaCaACcCG aAgGacctcTtGgt TAttaCAtaTtA CgG TAttaCAtaTtAC CTATaCaACcCGcGg CCcCTaGcATaC cTgTGGAGAg cGgCgG";
+		try {
+			Socket socket = new Socket(IP, PORT);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			PrintWriter writer = new PrintWriter(socket.getOutputStream());
+			System.out.println("Connection stablished with: " + socket.getInetAddress());
+			System.out.println("Starting Challenge 5!");
+
+			// Getting the number of Cases
+			String firstLine = reader.readLine();
+			int numberOfCases = Integer.parseInt(firstLine.split("\\s")[1]);
+
+			// Choosing mode
+			System.out.println(reader.readLine());
+			System.out.println("Setting MODE: " + MODE);
+			;
+			writer.println(MODE);
+			writer.flush();
+
+			// Starting tests
+			String key = "";
+			System.out.println(reader.readLine());
+			for (int i = 0; i < numberOfCases; ++i) {
+				String ADN = reader.readLine();
+				writer.println(getSolutionOf(ADN));
+				writer.flush();
+				key = reader.readLine();
+				System.out.println(key);
+			}
+
+			reader.close();
+			writer.close();
+			socket.close();
+
+			BufferedWriter keyWriter = new BufferedWriter(new FileWriter(OUTPUT_FILE));
+			keyWriter.write(key.split("\"")[1]); // To write the key
+			keyWriter.close();
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static String getSolutionOf(String ADN) {
+		finalSolution = new TreeSet<Integer>();
 		ArrayList<String> aDNParts = new ArrayList<String>(Arrays.asList(ADN.split("\\s")));
 		int maxSizeOfSubGroups = aDNParts.size() / 2;
 
@@ -55,8 +134,7 @@ public class ADNMixer {
 			for (Integer finalIndex : finalSolution) {
 				result += (finalIndex + 1) + ",";
 			}
-			result = result.substring(0, result.length() - 1);
-			System.out.println(result);
+			return result.substring(0, result.length() - 1);
 		}
 	}
 
@@ -112,7 +190,7 @@ public class ADNMixer {
 			this.indexUsedForConcat = indexUsedForConcat;
 		}
 
-		/* 
+		/*
 		 * Overloaded equals method to compare two strings of different solutions.
 		 * 
 		 * @see java.lang.Object#equals(java.lang.Object)
@@ -149,5 +227,4 @@ public class ADNMixer {
 			return new ArrayList<Integer>(indexUsedForConcat);
 		}
 	}
-
 }
