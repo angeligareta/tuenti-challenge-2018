@@ -1,4 +1,7 @@
 # TuentiChallenge2018
-![Ranking](img/ranking.jpg)
+<h1 align="center">Tuenti Challenge 2018</h1>
+<h4 align="center">Participation in the Tuenti Challenge of 2018 with 5 challenges solved</h4>
 
-Participation in the Tuenti Challenge of 2018. I reach to solve 5 challenges, every one is well documented in the src bin.
+## Ranking
+The ranking shows the position I achieved in every assignment.
+![Ranking](img/ranking.jpg)
